@@ -28,19 +28,41 @@ namespace WindowsFormsApplication1
         {
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
+                // reset the listbox
+                listBox1.Items.Clear();
+                
                 DirectoryInfo dinfo = new DirectoryInfo(folderBrowserDialog1.SelectedPath);
                 FileInfo[] Files = dinfo.GetFiles("*.xml");
-                foreach (FileInfo file in Files)
-                {
-                    listBox1.Items.Add(file.Name);
-                }
 
-                this.label2.Text = folderBrowserDialog1.SelectedPath;
+                if (Files.Length > 0)
+                {
+                    // enable the override checkbox
+                    this.checkBox1.Enabled = true;
+                
+                    foreach (FileInfo file in Files)
+                    {
+                        listBox1.Items.Add(file.Name);
+                    }
+
+                    this.label2.Text = folderBrowserDialog1.SelectedPath;
+                }
+                else
+                {
+                    const string noXmlMessage = "I didnt find any XML in that folder.  Kinda necessary if you want to PRETTY it up!";
+                    var errorDialog = MessageBox.Show(noXmlMessage, "What happened?", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.label2.Text = "";
+                }
             }
         }
 
         private void button1_Click_1(object sender, EventArgs e)
-        {
+        {      
+            if (this.label2.Text.Length == 0 || this.label4.Text.Length == 0)
+            {
+                const string noPathMessage = "You need to select a source and a destination path!";
+                var errorDialog = MessageBox.Show(noPathMessage, "Ooops!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+
             foreach (var file in listBox1.Items)
             {
                 String xmlFileToBeFormatted = Path.Combine(this.label2.Text, file.ToString());
@@ -57,7 +79,6 @@ namespace WindowsFormsApplication1
                     locationOfFormattedXml = Path.Combine(this.label4.Text, file.ToString());
                 }
                 WriteXml(formattedDoc, locationOfFormattedXml);
-                //var boo = formattedDoc;
             }
         }
 
@@ -113,6 +134,7 @@ namespace WindowsFormsApplication1
 
             if (state == CheckState.Checked)
             {
+                this.label4.Text = this.label2.Text;
                 this.destinationPath.Enabled = false;
             }
             else
